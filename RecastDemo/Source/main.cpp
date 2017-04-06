@@ -69,6 +69,20 @@ static SampleItem g_samples[] =
 };
 static const int g_nsamples = sizeof(g_samples) / sizeof(SampleItem);
 
+
+Sample* connectServer() 
+{
+	return nullptr; 
+}
+
+static SampleItem g_serverlist[] =
+{
+	{ connectServer, "127.0.0.1" },
+	{ connectServer, "192.168.0.1" },	
+};
+static const int g_nserverSamples = sizeof(g_serverlist) / sizeof(SampleItem);
+
+
 int main(int /*argc*/, char** /*argv*/)
 {
 	// Init SDL
@@ -553,6 +567,7 @@ int main(int /*argc*/, char** /*argv*/)
 			imguiLabel("Sample");
 			if (imguiButton(sampleName.c_str()))
 			{
+				showServerList = false;
 				if (showSample)
 				{
 					showSample = false;
@@ -569,6 +584,7 @@ int main(int /*argc*/, char** /*argv*/)
 			imguiLabel("Input Mesh");
 			if (imguiButton(meshName.c_str()))
 			{
+				showServerList = false;
 				if (showLevels)
 				{
 					showLevels = false;
@@ -685,7 +701,19 @@ int main(int /*argc*/, char** /*argv*/)
 
 		if (showServerList)
 		{
+			static int levelScroll = 0;
+			if (imguiBeginScrollArea("Choose Sample", width - 10 - 250 - 10 - 200, height - 10 - 250, 200, 250, &levelScroll))
+				mouseOverMenu = true;
 
+			Sample* newSample = nullptr;
+			for (int i = 0; i < g_nserverSamples; ++i)
+			{
+				if (imguiItem(g_serverlist[i].name.c_str()))
+				{
+					newSample = g_serverlist[i].create();					
+				}
+			}
+			imguiEndScrollArea();
 		}
 		
 		// Level selection dialog.
