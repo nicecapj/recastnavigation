@@ -159,6 +159,7 @@ int main(int /*argc*/, char** /*argv*/)
 	bool showLevels = false;
 	bool showSample = false;
 	bool showTestCases = false;
+	bool showServerList = false;
 
 	// Window scroll positions.
 	int propScroll = 0;
@@ -166,6 +167,7 @@ int main(int /*argc*/, char** /*argv*/)
 	int toolsScroll = 0;
 	
 	string sampleName = "Choose Sample...";
+	string gameServerIp = "127.0.0.1";
 	
 	vector<string> files;
 	const string meshesFolder = "Meshes";
@@ -532,6 +534,22 @@ int main(int /*argc*/, char** /*argv*/)
 				showTools = !showTools;
 
 			imguiSeparator();
+			
+			imguiLabel("GameServer IP");
+			if (imguiButton(gameServerIp.c_str()))
+			{
+				showSample = false;
+				if (showServerList)
+				{
+					showServerList = false;					
+				}
+				else
+				{
+					showServerList = true;					
+				}
+			}
+
+
 			imguiLabel("Sample");
 			if (imguiButton(sampleName.c_str()))
 			{
@@ -663,6 +681,11 @@ int main(int /*argc*/, char** /*argv*/)
 			}
 			
 			imguiEndScrollArea();
+		}
+
+		if (showServerList)
+		{
+
 		}
 		
 		// Level selection dialog.
