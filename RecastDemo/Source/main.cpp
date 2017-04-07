@@ -215,8 +215,8 @@ int main(int /*argc*/, char** /*argv*/)
 
 	LyoungFakeServer server;	
 	server.Start();
-	std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
-	std::chrono::system_clock::time_point prevTime = currentTime;
+	//std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
+	//std::chrono::system_clock::time_point prevTime = currentTime;
 	
 	bool done = false;
 	while(!done)
@@ -673,8 +673,11 @@ int main(int /*argc*/, char** /*argv*/)
 				{
 					newSample = g_samples[i].create();
 					if (newSample)
+					{
 						sampleName = g_samples[i].name;
-				}
+						server.SetNavigationSample(newSample);
+					}
+				}				
 			}
 			if (newSample)
 			{
