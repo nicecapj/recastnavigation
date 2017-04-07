@@ -44,6 +44,10 @@
 #include "Sample_TempObstacles.h"
 #include "Sample_Debug.h"
 
+//windows only
+#include "LyoungFakeServer.h"
+#include <chrono>
+
 #ifdef WIN32
 #	define snprintf _snprintf
 #	define putenv _putenv
@@ -208,10 +212,18 @@ int main(int /*argc*/, char** /*argv*/)
 	
 	glEnable(GL_CULL_FACE);
 	glDepthFunc(GL_LEQUAL);
+
+	LyoungFakeServer server;	
+	server.Start();
+	std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
+	std::chrono::system_clock::time_point prevTime = currentTime;
 	
 	bool done = false;
 	while(!done)
 	{
+		//currentTime = std::chrono::system_clock::now();
+		//auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - prevTime);				
+
 		// Handle input events.
 		int mouseScroll = 0;
 		bool processHitTest = false;
@@ -369,6 +381,8 @@ int main(int /*argc*/, char** /*argv*/)
 		float dt = (time - prevFrameTime) / 1000.0f;
 		prevFrameTime = time;
 		
+		server.Tick(dt);
+
 		t += dt;
 
 		// Hit test mesh.
@@ -535,6 +549,10 @@ int main(int /*argc*/, char** /*argv*/)
 		{
 			const char msg[] = "W/S/A/D: Move  RMB: Rotate";
 			imguiDrawText(280, height-20, IMGUI_ALIGN_LEFT, msg, imguiRGBA(255,255,255,128));
+			
+			char buff[32];
+			sprintf_s(buff, "FPS : %4.4f", dt);
+			imguiDrawText(280, height - 100, IMGUI_ALIGN_LEFT, buff, imguiRGBA(255, 255, 255, 128));
 		}
 		
 		if (showMenu)
@@ -965,6 +983,8 @@ int main(int /*argc*/, char** /*argv*/)
 		
 		glEnable(GL_DEPTH_TEST);
 		SDL_GL_SwapWindow(window);
+
+		//prevTime = std::chrono::system_clock::now();
 	}
 	
 	imguiRenderGLDestroy();
