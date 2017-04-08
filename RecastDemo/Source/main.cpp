@@ -213,8 +213,8 @@ int main(int /*argc*/, char** /*argv*/)
 	glEnable(GL_CULL_FACE);
 	glDepthFunc(GL_LEQUAL);
 
-	LyoungFakeServer server;	
-	server.Start();
+	LyoungFakeServer* server = new LyoungFakeServer();
+	server->Start();
 	//std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
 	//std::chrono::system_clock::time_point prevTime = currentTime;
 	
@@ -381,7 +381,8 @@ int main(int /*argc*/, char** /*argv*/)
 		float dt = (time - prevFrameTime) / 1000.0f;
 		prevFrameTime = time;
 		
-		server.Tick(dt);
+		if(server)
+			server->Tick(dt);
 
 		t += dt;
 
@@ -518,7 +519,9 @@ int main(int /*argc*/, char** /*argv*/)
 		if (sample)
 			sample->handleRender();
 		if (test)
-			test->handleRender();
+			test->handleRender();		
+		if(server)
+			server->handleRender();
 		
 		glDisable(GL_FOG);
 		
@@ -542,6 +545,10 @@ int main(int /*argc*/, char** /*argv*/)
 		{
 			if (test->handleRenderOverlay((double*)projectionMatrix, (double*)modelviewMatrix, (int*)viewport))
 				mouseOverMenu = true;
+		}
+		if (server)
+		{
+			server->handleRenderOverlay((double*)projectionMatrix, (double*)modelviewMatrix, (int*)viewport);
 		}
 
 		// Help text.
@@ -675,7 +682,10 @@ int main(int /*argc*/, char** /*argv*/)
 					if (newSample)
 					{
 						sampleName = g_samples[i].name;
-						server.SetNavigationSample(newSample);
+						if (server) 
+						{
+							server->SetNavigationSample(newSample);
+						}
 					}
 				}				
 			}
@@ -996,6 +1006,7 @@ int main(int /*argc*/, char** /*argv*/)
 	
 	delete sample;
 	delete geom;
+	delete server;
 	
 	return 0;
 }

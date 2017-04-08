@@ -1,5 +1,6 @@
 #pragma once
 #include "LyoungVector.h"
+#include <string>
 
 class LyoungFakeServer;
 class LyoungClient
@@ -27,9 +28,11 @@ public:
 	{
 		return uniqueID; 
 	}
-	void SetUID(unsigned int uid) {
-		uniqueID = uid;
+	std::string GetUIDString()
+	{
+		return uniqueIDCacheStr_;
 	}
+	void SetUID(unsigned int uid);
 
 	vec3f GetPosition()
 	{
@@ -43,11 +46,37 @@ public:
 		position_.Z = z;
 	}
 
+	vec3f GetTargetPosition()
+	{
+		return targetPosition_;
+	}
+
+	void SetTargetPosition(float x, float y, float z)
+	{
+		targetPosition_.X = x;
+		targetPosition_.Y = y;
+		targetPosition_.Z = z;
+	}
+
+	bool IsSetTargetPosition()
+	{
+		return isSetTargetPosition_;
+	}
+
 	void ProcessBasicStateMachine(float deltaTimeMs);
 
 private:
-	vec3f position_;
+	void SetTargetPosition(bool isSet)
+	{
+		isSetTargetPosition_ = isSet;
+	}
+
 	unsigned int uniqueID = 0;
+	std::string uniqueIDCacheStr_ = "";
+
+	vec3f position_;
+	vec3f targetPosition_;
+	bool isSetTargetPosition_ = false;	
 
 	State currentState_ = State::IDLE;
 	float Speed = 300.0f;

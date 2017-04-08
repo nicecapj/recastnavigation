@@ -1,10 +1,18 @@
 #include "LyoungFakeServer.h"
 #include <iostream>
 
-#include "LyoungClient.h"
-
+#include "SDL_opengl.h"
+#ifdef __APPLE__
+#	include <OpenGL/glu.h>
+#else
+#	include <GL/glu.h>
+#endif
+#include "imgui.h"
 #include "Sample.h"
 #include "DebugDraw.h"
+#include "imguiRenderGL.h"
+
+#include "LyoungClient.h"
 
 unsigned int LyoungFakeServer::AgentColor = duRGBA(128, 25, 0, 192);
 unsigned int LyoungFakeServer::PathColor = duRGBA(51, 102, 0, 129);
@@ -43,12 +51,7 @@ void LyoungFakeServer::Tick(float deltaTimeMs)
 		LyoungClient* client = it->second;
 		if (client != nullptr)
 		{
-			client->Tick(deltaTimeMs);
-
-			if (navSample_ != nullptr)
-			{
-				DrawClient(client->GetUID(), client->GetPosition(), agentRadius_, agentHeight_, agentClimb_, LyoungFakeServer::AgentColor);
-			}			
+			client->Tick(deltaTimeMs);			
 		}
 	}
 }
@@ -67,9 +70,99 @@ void LyoungFakeServer::SetNavigationSample(Sample* navSample)
 
 void LyoungFakeServer::CreateDummyClients()
 {
-	clients.insert(std::make_pair(++nextUniqueId, new LyoungClient(this)));
+	LyoungClient* client = new LyoungClient(this);
+	client->SetUID(++nextUniqueId);
+
+	clients.insert(clientMap::value_type(client->GetUID(), client));
 }
 
+
+void LyoungFakeServer::handleRender()
+{
+	clientMapIter it = clients.begin();
+	clientMapIter endIter = clients.end();
+	for (it = clients.begin(); it != endIter; ++it)
+	{
+		LyoungClient* client = it->second;
+		if (client != nullptr)
+		{
+			if (navSample_ != nullptr)
+			{
+				DrawClient(client->GetUID(), client->GetPosition(), agentRadius_, agentHeight_, agentClimb_, LyoungFakeServer::AgentColor);
+			}
+		}
+	}
+}
+
+void LyoungFakeServer::handleRenderOverlay(double * proj, double * model, int * view)
+{
+	clientMapIter it = clients.begin();
+	clientMapIter endIter = clients.end();
+	for (it = clients.begin(); it != endIter; ++it)
+	{
+		LyoungClient* client = it->second;
+		if (client != nullptr)
+		{
+			if (navSample_ != nullptr)
+			{
+				handleRenderOverlayClient(proj, model, view, client);
+			}
+		}
+	}	
+}
+
+void LyoungFakeServer::handleRenderOverlayClient(double* proj, double* model, int* view, LyoungClient* client)
+{
+	GLdouble x, y, z;
+
+	auto currentPosition = client->GetPosition();
+	auto targetPosition = client->GetTargetPosition();
+
+	// Draw start and end point labels
+	if (gluProject((GLdouble)currentPosition.X, (GLdouble)currentPosition.Y, (GLdouble)currentPosition.Z,
+		model, proj, view, &x, &y, &z))
+	{
+		imguiDrawText((int)x, (int)(y - 25), IMGUI_ALIGN_CENTER, client->GetUIDString().c_str(), imguiRGBA(0, 0, 0, 220));
+	}
+	if (client->IsSetTargetPosition() && gluProject((GLdouble)targetPosition.X, (GLdouble)targetPosition.Y, (GLdouble)targetPosition.Z,
+		model, proj, view, &x, &y, &z))
+	{
+		imguiDrawText((int)x, (int)(y - 25), IMGUI_ALIGN_CENTER, client->GetUIDString().c_str(), imguiRGBA(0, 0, 0, 220));
+	}	
+}
+
+int LyoungFakeServer::type()
+{
+	return 0;
+}
+
+void LyoungFakeServer::init(Sample * sample)
+{
+}
+
+void LyoungFakeServer::reset()
+{
+}
+
+void LyoungFakeServer::handleMenu()
+{
+}
+
+void LyoungFakeServer::handleClick(const float * s, const float * p, bool shift)
+{
+}
+
+void LyoungFakeServer::handleToggle()
+{
+}
+
+void LyoungFakeServer::handleStep()
+{
+}
+
+void LyoungFakeServer::handleUpdate(const float dt)
+{
+}
 
 void LyoungFakeServer::DrawClient(unsigned int uid, vec3f pos, float r, float h, float c, const unsigned int col)
 {

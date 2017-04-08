@@ -8,7 +8,8 @@
 LyoungClient::LyoungClient(LyoungFakeServer* worldServer)
 {
 	//position_ = LyoungVector3<float>::Zero();
-	position_ = vec3f(40, 30, 40);	//valid pos in dungeon map
+	position_ = vec3f(54.74, -0.75, 16.75);	//valid pos in navi test map	
+	targetPosition_ = position_;
 }
 
 
@@ -36,6 +37,16 @@ vec3f LyoungClient::FindDestination()
 	}
 	
 	return vec3f::Zero();
+}
+
+void LyoungClient::SetUID(unsigned int uid)
+{
+	uniqueID = uid;
+
+	char buff[64] = { 0, };
+	itoa(uid, buff, 10);
+
+	uniqueIDCacheStr_.assign(buff);
 }
 
 void LyoungClient::ProcessBasicStateMachine(float deltaTimeMs)
