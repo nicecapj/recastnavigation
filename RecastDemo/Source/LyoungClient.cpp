@@ -3,13 +3,20 @@
 #include "LyoungVector.h"
 #include "Sample.h"
 #include <SDL.h>
-
+#include <random>	//c++11 random
 
 LyoungClient::LyoungClient(LyoungFakeServer* worldServer)
 {
 	//position_ = LyoungVector3<float>::Zero();
-	position_ = vec3f(54.74, -0.75, 16.75);	//valid pos in navi test map	
-	targetPosition_ = position_;
+
+	std::random_device alwaysRandomSeed;	
+	std::uniform_real<float> floatRandom(0.0f, 10.0f) ;
+
+	position_ = vec3f(54.74, -0.75, 16.75);	//valid pos in navi test map					
+	position_.X += floatRandom(alwaysRandomSeed);
+	position_.Z += floatRandom(alwaysRandomSeed);
+
+	targetPosition_ = position_;		
 }
 
 
@@ -44,7 +51,7 @@ void LyoungClient::SetUID(unsigned int uid)
 	uniqueID = uid;
 
 	char buff[64] = { 0, };
-	itoa(uid, buff, 10);
+	_itoa(uid, buff, 10);
 
 	uniqueIDCacheStr_.assign(buff);
 }

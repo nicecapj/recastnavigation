@@ -70,10 +70,13 @@ void LyoungFakeServer::SetNavigationSample(Sample* navSample)
 
 void LyoungFakeServer::CreateDummyClients()
 {
-	LyoungClient* client = new LyoungClient(this);
-	client->SetUID(++nextUniqueId);
+	for (int i = 0; i < DummyClientSettingCount; ++i)
+	{
+		LyoungClient* client = new LyoungClient(this);
+		client->SetUID(++nextUniqueId);
 
-	clients.insert(clientMap::value_type(client->GetUID(), client));
+		clients.insert(clientMap::value_type(client->GetUID(), client));
+	}
 }
 
 

@@ -10,6 +10,7 @@ class LyoungFakeServer : public SampleTool
 {
 public:
 	const long TickTimeMS = 3000;//0.33f;
+	const int DummyClientSettingCount = 50;
 	static unsigned int AgentColor;
 	static unsigned int PathColor;
 	static unsigned int TargetColor;
