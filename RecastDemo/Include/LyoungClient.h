@@ -2,6 +2,9 @@
 #include "LyoungVector.h"
 #include <string>
 
+#include "DetourNavMesh.h"
+#include "DetourNavMeshQuery.h"
+
 class LyoungFakeServer;
 class LyoungClient
 {
@@ -13,14 +16,15 @@ public:
 		COUNT,
 	};
 
-	float waitTime[State::COUNT] = { 2,4 };
+	float waitTime[State::COUNT] = { 0.5/*2*/,4 };
 
 	LyoungClient(LyoungFakeServer* worldServer);
 	~LyoungClient();
 	
+	void Initialze();	//if server has navigation mesh, it is set to true, not duplicated call.
+
 	void Tick(float deltaTimeMs);
 
-	vec3f FindDestination();
 	void BeginMove();
 	void EndMove();	
 
@@ -65,7 +69,23 @@ public:
 
 	void ProcessBasicStateMachine(float deltaTimeMs);
 
+
+	//path finding
+	static const int MAX_STEER_POINTS = 3;
+	float steerPath[MAX_STEER_POINTS * 3];
+	static const int MAX_POLYS = 256;
+	static const int MAX_SMOOTH = 2048;	unsigned char steerPathFlags[MAX_STEER_POINTS];
+
+	dtPolyRef steerPathPolys[MAX_STEER_POINTS];
+	int nsteerPath = 0;
+	int pathSize = 10;
+
+	dtQueryFilter filter_;
+
+	bool FindValidDestination(vec3f& foundPosition);
+
 private:
+	bool isInitialize = false;
 	void SetTargetPosition(bool isSet)
 	{
 		isSetTargetPosition_ = isSet;
@@ -76,6 +96,9 @@ private:
 
 	vec3f position_;
 	vec3f targetPosition_;
+	dtPolyRef path_[MAX_POLYS];
+	dtPolyRef startRef;
+	dtPolyRef endRef;
 	bool isSetTargetPosition_ = false;	
 
 	State currentState_ = State::IDLE;

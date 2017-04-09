@@ -5,18 +5,31 @@
 #include <SDL.h>
 #include <random>	//c++11 random
 
+//return 0~1
+static float frand()
+{
+	return (float)rand() / (float)RAND_MAX;
+}
+
 LyoungClient::LyoungClient(LyoungFakeServer* worldServer)
 {
-	//position_ = LyoungVector3<float>::Zero();
+	worldServer_ = worldServer;
+	position_ = LyoungVector3<float>::Zero();
 
-	std::random_device alwaysRandomSeed;	
-	std::uniform_real<float> floatRandom(0.0f, 10.0f) ;
+	//std::random_device alwaysRandomSeed;	
+	//std::uniform_real<float> floatRandom(0.0f, 10.0f) ;
 
-	position_ = vec3f(54.74, -0.75, 16.75);	//valid pos in navi test map					
-	position_.X += floatRandom(alwaysRandomSeed);
-	position_.Z += floatRandom(alwaysRandomSeed);
+	//position_ = vec3f(54.74, -0.75, 16.75);	//valid pos in navi test map					
+	//position_.X += floatRandom(alwaysRandomSeed);
+	//position_.Z += floatRandom(alwaysRandomSeed);
+	//position_.Y += floatRandom(alwaysRandomSeed);	Since the z axis is used as a height, it does not alter the coordinates.
+	targetPosition_ = position_;	
+	
+	filter_.setIncludeFlags(SAMPLE_POLYFLAGS_ALL ^ SAMPLE_POLYFLAGS_DISABLED);
+	filter_.setExcludeFlags(0);
 
-	targetPosition_ = position_;		
+
+	isInitialize = false;
 }
 
 
@@ -24,14 +37,41 @@ LyoungClient::~LyoungClient()
 {	
 }
 
+void LyoungClient::Initialze()
+{
+	if (!isInitialize)
+	{
+		auto navSample = worldServer_->GetNavigationSample();
+		if (navSample != nullptr)
+		{
+			auto query = navSample->getNavMeshQuery();
+			if (query != nullptr)
+			{
+				auto buildedNavMesh = query->getAttachedNavMesh();
+				if (buildedNavMesh != nullptr)
+				{
+					query->findRandomPoint(&filter_, frand, &startRef, (float*)&position_);
+					
+					isInitialize = true;
+				}
+			}
+		}
+	}
+}
+
+
 void LyoungClient::Tick(float deltaTimeMs)
 {
+	Initialze();
 	ProcessBasicStateMachine(deltaTimeMs);
 }
 
-vec3f LyoungClient::FindDestination()
+bool LyoungClient::FindValidDestination(vec3f& foundPosition)
 {
-	//float forcastPosition[3];	
+	std::random_device alwaysRandomSeed;
+	std::uniform_real<float> floatRandom(0.0f, 10.0f);
+	float rndValue = floatRandom(alwaysRandomSeed);
+
 
 	auto navSample = worldServer_->GetNavigationSample();
 	if (navSample != nullptr)
@@ -39,11 +79,15 @@ vec3f LyoungClient::FindDestination()
 		auto query = navSample->getNavMeshQuery();
 		if (query != nullptr)
 		{
-			//query->findStraightPath(&position_, )
+			auto buildedNavMesh = query->getAttachedNavMesh();
+			if (buildedNavMesh == nullptr)
+				return false;
+
+			query->findRandomPoint(&filter_, frand, &endRef, (float*)&targetPosition_);
 		}
 	}
 	
-	return vec3f::Zero();
+	return false;
 }
 
 void LyoungClient::SetUID(unsigned int uid)
@@ -68,7 +112,12 @@ void LyoungClient::ProcessBasicStateMachine(float deltaTimeMs)
 		{
 			currentStateWaitTimeMS_ = 0.0;
 
-			//vec3f dest = FindDestination();			
+			vec3f dest = vec3f::Zero();
+			if (FindValidDestination(dest))
+			{
+				currentState_ = MOVE;
+				targetPosition_ = dest;
+			}
 		}
 	}break;
 
@@ -77,6 +126,18 @@ void LyoungClient::ProcessBasicStateMachine(float deltaTimeMs)
 		if (currentStateWaitTimeMS_ > waitTime[MOVE])
 		{
 			currentStateWaitTimeMS_ = 0.0;
+			currentState_ = IDLE;
+		}
+		else
+		{
+			if (vec3f::GetDistance(position_, targetPosition_) > 0.05f)
+			{
+
+			}
+			else
+			{
+				targetPosition_ = position_;	//force position and target pogition to be synchroized.
+			}
 		}
 	}
 	break;
