@@ -1,4 +1,6 @@
 #pragma once
+#include <String>
+
 template<typename T>
 struct LyoungVector2
 {
@@ -6,6 +8,22 @@ public:
 	LyoungVector2();
 	LyoungVector2(T x, T y) :X(x), Y(y) {};
 	~LyoungVector2();
+
+	std::string ToString()
+	{
+		std::string temp;
+
+		char buff[64];
+		sprintf(buff, "%4.2f", X);
+		memset(buff, 0, sizeof(buff));
+		temp.assign(buff);
+
+		memset(buff, 0, sizeof(buff));
+		sprintf(buff, ",%4.2f", Y);
+		temp.append(buff);
+
+		return temp;
+	}
 
 	static LyoungVector2 Zero()
 	{
@@ -55,6 +73,26 @@ public:
 	}
 
 	~LyoungVector3();	
+	
+	std::string ToString()
+	{		
+		std::string temp;		
+
+		char buff[64];
+		sprintf(buff, "%4.2f", X);
+		memset(buff, 0, sizeof(buff));
+		temp.assign(buff);
+
+		memset(buff, 0, sizeof(buff));
+		sprintf(buff, ",%4.2f", Y);		
+		temp.append(buff);
+
+		memset(buff, 0, sizeof(buff));
+		sprintf(buff, ",%4.4f", Z);		
+		temp.append(buff);
+		
+		return temp;
+	}
 
 	static LyoungVector3 Zero()
 	{

@@ -38,6 +38,24 @@ public:
 	}
 	void SetUID(unsigned int uid);
 
+	std::string GetUidAndPositionString()
+	{
+		std::string temp;
+		temp.assign(uniqueIDCacheStr_);
+		temp.append(" : ");
+		temp.append(position_.ToString());
+		return temp;
+	}
+
+	std::string GetUidAndTargetPositionString()
+	{
+		std::string temp;
+		temp.assign(uniqueIDCacheStr_);
+		temp.append(" : ");
+		temp.append(targetPosition_.ToString());
+		return temp;
+	}
+
 	vec3f GetPosition()
 	{
 		return position_;
