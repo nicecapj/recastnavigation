@@ -5,6 +5,8 @@
 #include <SDL.h>
 #include <random>	//c++11 random
 
+#include "DetourCommon.h"
+
 //return 0~1
 static float frand()
 {
@@ -14,20 +16,11 @@ static float frand()
 LyoungClient::LyoungClient(LyoungFakeServer* worldServer)
 {
 	worldServer_ = worldServer;
-	position_ = LyoungVector3<float>::Zero();
-
-	//std::random_device alwaysRandomSeed;	
-	//std::uniform_real<float> floatRandom(0.0f, 10.0f) ;
-
-	//position_ = vec3f(54.74, -0.75, 16.75);	//valid pos in navi test map					
-	//position_.X += floatRandom(alwaysRandomSeed);
-	//position_.Z += floatRandom(alwaysRandomSeed);
-	//position_.Y += floatRandom(alwaysRandomSeed);	Since the z axis is used as a height, it does not alter the coordinates.
+	position_ = LyoungVector3<float>::Zero();	
 	targetPosition_ = position_;	
 	
 	filter_.setIncludeFlags(SAMPLE_POLYFLAGS_ALL ^ SAMPLE_POLYFLAGS_DISABLED);
 	filter_.setExcludeFlags(0);
-
 
 	isInitialize = false;
 }
@@ -83,7 +76,30 @@ bool LyoungClient::FindValidDestination(vec3f& foundPosition)
 			if (buildedNavMesh == nullptr)
 				return false;
 
-			query->findRandomPoint(&filter_, frand, &endRef, (float*)&targetPosition_);
+			if (query->findRandomPoint(&filter_, frand, &endRef, (float*)&targetPosition_) == DT_SUCCESS)
+			{
+				if (query->findPath(startRef, endRef, (const float*)&position_, (const float*)&targetPosition_, &filter_, path_, &pathSize, MAX_POLYS) == DT_SUCCESS)
+				{
+					//nicecapj_20170411-if found poly ids, change to straight position.
+					m_nstraightPath = 0;
+					if (pathSize)
+					{
+						// In case of partial path, make sure the end point is clamped to the last polygon.
+						float epos[3];
+						dtVcopy(epos, (const float*)&targetPosition_);
+						if (path_[pathSize - 1] != endRef)
+							query->closestPointOnPoly(path_[pathSize - 1], (const float*)&targetPosition_, epos, 0);
+
+						query->findStraightPath((const float*)&position_, epos, path_, pathSize,
+							m_straightPath,
+							m_straightPathFlags,
+							m_straightPathPolys,
+							&m_nstraightPath,
+							MAX_POLYS,
+							m_straightPathOptions);
+					}
+				}
+			}
 		}
 	}
 	

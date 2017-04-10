@@ -16,7 +16,7 @@ public:
 		COUNT,
 	};
 
-	float waitTime[State::COUNT] = { 0.5/*2*/,4 };
+	float waitTime[State::COUNT] = { 2,4 };
 
 	LyoungClient(LyoungFakeServer* worldServer);
 	~LyoungClient();
@@ -102,6 +102,17 @@ public:
 
 	bool FindValidDestination(vec3f& foundPosition);
 
+
+	float m_straightPath[MAX_POLYS * 3];
+	unsigned char m_straightPathFlags[MAX_POLYS];
+	dtPolyRef m_straightPathPolys[MAX_POLYS];
+	int m_nstraightPath;
+	int m_straightPathOptions;
+
+	float* GetStraightPath() {
+		return m_straightPath; 
+	}
+	int GetStraightPathCount() { return m_nstraightPath; }
 private:
 	bool isInitialize = false;
 	void SetTargetPosition(bool isSet)

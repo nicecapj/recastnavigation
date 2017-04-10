@@ -28,6 +28,7 @@ public:
 	void SetNavigationSample(Sample* navSample);
 	void CreateDummyClients();
 	void DrawClient(unsigned int uid, vec3f pos, float r, float h, float c, const unsigned int col);
+	void DrawPath(LyoungClient* client);
 	
 	virtual void handleRender();
 	virtual void handleRenderOverlay(double* proj, double* model, int* view);
