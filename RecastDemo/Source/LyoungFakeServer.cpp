@@ -17,6 +17,7 @@
 unsigned int LyoungFakeServer::AgentColor = duRGBA(128, 25, 0, 192);
 unsigned int LyoungFakeServer::PathColor = duRGBA(51, 102, 0, 129);
 unsigned int LyoungFakeServer::TargetColor = duRGBA(0, 0, 0, 64);
+unsigned int LyoungFakeServer::ConnectionColor = duRGBA(102, 211, 0, 64);
 
 LyoungFakeServer::LyoungFakeServer()
 {	
@@ -59,13 +60,6 @@ void LyoungFakeServer::Tick(float deltaTimeMs)
 void LyoungFakeServer::SetNavigationSample(Sample* navSample)
 {
 	navSample_ = navSample;
-
-	if (navSample_ != nullptr)
-	{
-		agentRadius_ = navSample_->getAgentRadius();
-		agentHeight_ = navSample_->getAgentHeight();
-		agentClimb_ = navSample_->getAgentClimb();
-	}
 }
 
 void LyoungFakeServer::CreateDummyClients()
@@ -91,8 +85,7 @@ void LyoungFakeServer::handleRender()
 		{
 			if (navSample_ != nullptr)
 			{
-				DrawClient(client->GetUID(), client->GetPosition(), agentRadius_, agentHeight_, agentClimb_, LyoungFakeServer::AgentColor);
-				DrawPath(client);
+				client->handleRender();
 			}
 		}
 	}
@@ -166,73 +159,4 @@ void LyoungFakeServer::handleStep()
 
 void LyoungFakeServer::handleUpdate(const float dt)
 {
-}
-
-void LyoungFakeServer::DrawClient(unsigned int uid, vec3f pos, float r, float h, float c, const unsigned int col)
-{
-	if (navSample_ == nullptr)
-		return;
-
-	duDebugDraw& dd = navSample_->getDebugDraw();
-
-	dd.depthMask(false);
-
-	// Agent dimensions.	
-	duDebugDrawCylinderWire(&dd, pos.X - r, pos.Y + 0.02f, pos.Z - r, pos.X + r, pos.Y + h, pos.Z + r, col, 2.0f);
-
-	duDebugDrawCircle(&dd, pos.X, pos.Y + c, pos.Z, r, duRGBA(0, 0, 0, 64), 1.0f);
-
-	unsigned int colb = duRGBA(0, 0, 0, 196);
-	dd.begin(DU_DRAW_LINES);
-	dd.vertex(pos.X, pos.Y - c, pos.Z, colb);
-	dd.vertex(pos.X, pos.Y + c, pos.Z, colb);
-	dd.vertex(pos.X - r / 2, pos.Y + 0.02f, pos.Z, colb);
-	dd.vertex(pos.X + r / 2, pos.Y + 0.02f, pos.Z, colb);
-	dd.vertex(pos.X, pos.Y + 0.02f, pos.Z - r / 2, colb);
-	dd.vertex(pos.X, pos.Y + 0.02f, pos.Z + r / 2, colb);
-	dd.end();
-
-	dd.depthMask(true);
-}
-
-void LyoungFakeServer::DrawPath(LyoungClient* client)
-{
-
-	duDebugDraw& dd = navSample_->getDebugDraw();
-	int straightPathCount = client->GetStraightPathCount();
-	if (straightPathCount)
-	{
-		dd.depthMask(false);
-		const unsigned int spathCol = duRGBA(64, 16, 0, 220);
-		const unsigned int offMeshCol = duRGBA(128, 96, 0, 220);
-		dd.begin(DU_DRAW_LINES, 2.0f);
-		for (int i = 0; i < straightPathCount - 1; ++i)
-		{
-			unsigned int col;
-			if (client->m_straightPathFlags[i] & DT_STRAIGHTPATH_OFFMESH_CONNECTION)
-				col = offMeshCol;
-			else
-				col = spathCol;
-
-			dd.vertex(client->m_straightPath[i * 3], client->m_straightPath[i * 3 + 1] + 0.4f, client->m_straightPath[i * 3 + 2], col);
-			dd.vertex(client->m_straightPath[(i + 1) * 3], client->m_straightPath[(i + 1) * 3 + 1] + 0.4f, client->m_straightPath[(i + 1) * 3 + 2], col);
-		}
-		dd.end();
-		dd.begin(DU_DRAW_POINTS, 6.0f);
-		for (int i = 0; i < straightPathCount; ++i)
-		{
-			unsigned int col;
-			if (client->m_straightPathFlags[i] & DT_STRAIGHTPATH_START)
-				col = PathColor;
-			else if (client->m_straightPathFlags[i] & DT_STRAIGHTPATH_END)
-				col = TargetColor;
-			else if (client->m_straightPathFlags[i] & DT_STRAIGHTPATH_OFFMESH_CONNECTION)
-				col = offMeshCol;
-			else
-				col = spathCol;
-			dd.vertex(client->m_straightPath[i * 3], client->m_straightPath[i * 3 + 1] + 0.4f, client->m_straightPath[i * 3 + 2], col);
-		}
-		dd.end();
-		dd.depthMask(true);
-	}
 }

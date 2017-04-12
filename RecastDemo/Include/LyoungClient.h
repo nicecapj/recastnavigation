@@ -25,8 +25,6 @@ public:
 
 	void Tick(float deltaTimeMs);
 
-	void BeginMove();
-	void EndMove();	
 
 	unsigned int GetUID() 
 	{
@@ -113,6 +111,10 @@ public:
 		return m_straightPath; 
 	}
 	int GetStraightPathCount() { return m_nstraightPath; }
+
+	void handleRender();
+	void RenderPath();
+	
 private:
 	bool isInitialize = false;
 	void SetTargetPosition(bool isSet)
@@ -129,6 +131,9 @@ private:
 	dtPolyRef startRef;
 	dtPolyRef endRef;
 	bool isSetTargetPosition_ = false;	
+	float agentRadius_;
+	float agentHeight_;
+	float agentClimb_;
 
 	State currentState_ = State::IDLE;
 	float Speed = 300.0f;

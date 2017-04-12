@@ -3,8 +3,7 @@
 #include "Sample.h"
 #include "LyoungVector.h"
 
-//class Sample;
-
+class Sample;
 class LyoungClient;
 class LyoungFakeServer : public SampleTool
 {
@@ -14,6 +13,7 @@ public:
 	static unsigned int AgentColor;
 	static unsigned int PathColor;
 	static unsigned int TargetColor;
+	static unsigned int ConnectionColor;
 
 
 	LyoungFakeServer();
@@ -27,8 +27,6 @@ public:
 	}
 	void SetNavigationSample(Sample* navSample);
 	void CreateDummyClients();
-	void DrawClient(unsigned int uid, vec3f pos, float r, float h, float c, const unsigned int col);
-	void DrawPath(LyoungClient* client);
 	
 	virtual void handleRender();
 	virtual void handleRenderOverlay(double* proj, double* model, int* view);
@@ -43,9 +41,6 @@ private:
 	unsigned int nextUniqueId = 0;
 
 	Sample* navSample_;
-	float agentRadius_;
-	float agentHeight_;
-	float agentClimb_;
 
 	// Inherited via SampleTool
 	virtual int type() override;
