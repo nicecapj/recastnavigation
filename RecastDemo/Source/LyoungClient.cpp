@@ -94,13 +94,16 @@ bool LyoungClient::FindValidDestination(vec3f& foundPosition)
 						if (path_[pathSize - 1] != endRef)
 							query->closestPointOnPoly(path_[pathSize - 1], (const float*)&targetPosition_, epos, 0);
 
-						query->findStraightPath((const float*)&position_, epos, path_, pathSize,
+						if (query->findStraightPath((const float*)&position_, epos, path_, pathSize,
 							m_straightPath,
 							m_straightPathFlags,
 							m_straightPathPolys,
 							&m_nstraightPath,
 							MAX_POLYS,
-							m_straightPathOptions);
+							m_straightPathOptions) == DT_SUCCESS)
+						{
+							return true;
+						}						
 					}
 				}
 			}
