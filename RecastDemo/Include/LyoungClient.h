@@ -117,6 +117,7 @@ public:
 	dtPolyRef m_straightPathPolys[MAX_POLYS];
 	int m_nstraightPath;
 	int m_straightPathOptions;
+	int m_nstraightPathIndex = 0;
 
 	float* GetStraightPath() {
 		return m_straightPath; 
@@ -147,7 +148,7 @@ private:
 	float agentClimb_;
 
 	State currentState_ = State::IDLE;
-	float Speed = 300.0f;
+	float speed = 3.0f;	
 
 	float currentStateWaitTimeMS_ = 0.0f;
 

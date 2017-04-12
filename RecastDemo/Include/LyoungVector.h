@@ -79,6 +79,24 @@ public:
 	{
 		return LyoungVector3(X - other.X, Y - other.Y, Z - other.Z);
 	}
+	
+	LyoungVector3 operator*(const LyoungVector3& other)
+	{
+		return LyoungVector3(X * other.X, Y * other.Y, Z * other.Z);
+	}
+
+	LyoungVector3 operator*(float value)
+	{
+		return LyoungVector3(X * value, Y * value, Z * value);
+	}
+
+	LyoungVector3& operator+=(const LyoungVector3& other)
+	{
+		this->X += other.X;
+		this->Y += other.Y;
+		this->Z += other.Z;
+		return *this;
+	}
 
 	~LyoungVector3();	
 

@@ -101,7 +101,7 @@ bool LyoungClient::FindValidDestination(vec3f& foundPosition)
 							&m_nstraightPath,
 							MAX_POLYS,
 							m_straightPathOptions) == DT_SUCCESS)
-						{
+						{							
 							return true;
 						}						
 					}
@@ -142,6 +142,7 @@ void LyoungClient::handleRender()
 
 			duDebugDrawCircle(&dd, position_.X, position_.Y + agentClimb_, position_.Z, agentRadius_, duRGBA(0, 0, 0, 64), 1.0f);
 
+			//gizmo
 			unsigned int colb = duRGBA(0, 0, 0, 196);
 			dd.begin(DU_DRAW_LINES);
 			dd.vertex(position_.X, position_.Y - agentClimb_, position_.Z, colb);
@@ -188,7 +189,7 @@ void LyoungClient::RenderPath()
 						col = spathCol;
 
 					dd.vertex(m_straightPath[i * 3], m_straightPath[i * 3 + 1] + 0.4f, m_straightPath[i * 3 + 2], col);
-					dd.vertex(m_straightPath[(i + 1) * 3], m_straightPath[(i + 1) * 3 + 1] + 0.4f, m_straightPath[(i + 1) * 3 + 2], col);
+					dd.vertex(m_straightPath[(i + 1) * 3], m_straightPath[(i + 1) * 3 + 1] + 0.4f, m_straightPath[(i + 1) * 3 + 2], col);					
 				}
 				dd.end();
 				dd.begin(DU_DRAW_POINTS, 6.0f);
@@ -203,7 +204,7 @@ void LyoungClient::RenderPath()
 						col = LyoungFakeServer::ConnectionColor;
 					else
 						col = spathCol;
-					dd.vertex(m_straightPath[i * 3], m_straightPath[i * 3 + 1] + 0.4f, m_straightPath[i * 3 + 2], col);
+					dd.vertex(m_straightPath[i * 3], m_straightPath[i * 3 + 1] + 0.4f, m_straightPath[i * 3 + 2], col);					
 				}
 				dd.end();
 				dd.depthMask(true);
@@ -237,28 +238,34 @@ void LyoungClient::ProcessBasicStateMachine(float deltaTimeMs)
 			vec3f dest = vec3f::Zero();
 			if (FindValidDestination(dest))
 			{
+				currentStateWaitTimeMS_ = 0;
 				currentState_ = MOVE;
+				m_nstraightPathIndex = 0;
 				targetPosition_ = dest;
 			}
 		}
 	}break;
 
 	case MOVE:
-	{
-		if (currentStateWaitTimeMS_ > waitTime[MOVE])
+	{						
+		if(m_nstraightPathIndex == m_nstraightPath)
 		{
-			currentStateWaitTimeMS_ = 0.0;
+			currentStateWaitTimeMS_ = 0;
 			currentState_ = IDLE;
+			m_nstraightPath = 0;
+			targetPosition_ = position_;
 		}
 		else
 		{
-			if (vec3f::GetDistance(position_, targetPosition_) > 0.05f)
+			vec3f target(m_straightPath[m_nstraightPathIndex * 3], m_straightPath[m_nstraightPathIndex * 3 + 1], m_straightPath[m_nstraightPathIndex * 3 + 2]);
+			if (vec3f::GetDistance(position_, target) < 0.05f)
 			{
-				
+				++m_nstraightPathIndex;
 			}
 			else
 			{
-				targetPosition_ = position_;	//force position and target pogition to be synchroized.
+				vec3f dir = (target - position_).GetNormalizedVector();
+				position_ += dir * speed * deltaTimeMs;
 			}
 		}
 	}
