@@ -16,6 +16,12 @@ public:
 		COUNT,
 	};
 
+	std::string StateStr[State::COUNT] =
+	{
+		"IDLE",
+		"MOVE",
+	};
+
 	float waitTime[State::COUNT] = { 2,4 };
 
 	LyoungClient(LyoungFakeServer* worldServer);
@@ -52,6 +58,11 @@ public:
 		temp.append(" : ");
 		temp.append(targetPosition_.ToString());
 		return temp;
+	}
+
+	std::string GetStateString()
+	{
+		return StateStr[currentState_];
 	}
 
 	vec3f GetPosition()

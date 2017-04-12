@@ -121,11 +121,18 @@ void LyoungFakeServer::handleRenderOverlayClient(double* proj, double* model, in
 	{
 		imguiDrawText((int)x, (int)(y - 25), IMGUI_ALIGN_CENTER, client->GetUidAndPositionString().c_str(), imguiRGBA(0, 0, 0, 220));
 	}
+
 	if (client->IsSetTargetPosition() && gluProject((GLdouble)targetPosition.X, (GLdouble)targetPosition.Y, (GLdouble)targetPosition.Z,
 		model, proj, view, &x, &y, &z))
 	{
 		imguiDrawText((int)x, (int)(y - 25), IMGUI_ALIGN_CENTER, client->GetUidAndTargetPositionString().c_str(), imguiRGBA(0, 0, 0, 220));
 	}	
+
+	if (gluProject((GLdouble)currentPosition.X, (GLdouble)currentPosition.Y, (GLdouble)currentPosition.Z,
+		model, proj, view, &x, &y, &z))
+	{
+		imguiDrawText((int)x, (int)(y + 25), IMGUI_ALIGN_CENTER, client->GetStateString().c_str(), imguiRGBA(0, 255, 0, 220));
+	}
 }
 
 int LyoungFakeServer::type()
