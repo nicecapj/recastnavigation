@@ -4,6 +4,7 @@ Branch : withGameServer
 - draw path of client
 - cliens move random position.
 - draw ai state of client(idle / move)
+![screenshot of a navmesh baked with the sample program](/RecastDemo/viewerScreenshot.png?raw=true)
 
 
 
