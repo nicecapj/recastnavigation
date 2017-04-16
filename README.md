@@ -1,3 +1,12 @@
+Branch : withGameServer
+- added fake server and dummy client.
+- draw client
+- draw path of client
+- cliens move random position.
+- draw ai state of client(idle / move)
+
+
+
 
 Recast & Detour
 ===============
