@@ -44,6 +44,10 @@
 #include "Sample_TempObstacles.h"
 #include "Sample_Debug.h"
 
+//windows only
+#include "LyoungFakeServer.h"
+#include <chrono>
+
 #ifdef WIN32
 #	define snprintf _snprintf
 #	define putenv _putenv
@@ -68,6 +72,20 @@ static SampleItem g_samples[] =
 	{ createTempObstacle, "Temp Obstacles" },
 };
 static const int g_nsamples = sizeof(g_samples) / sizeof(SampleItem);
+
+
+Sample* connectServer() 
+{
+	return nullptr; 
+}
+
+static SampleItem g_serverlist[] =
+{
+	{ connectServer, "127.0.0.1" },
+	{ connectServer, "192.168.0.1" },	
+};
+static const int g_nserverSamples = sizeof(g_serverlist) / sizeof(SampleItem);
+
 
 int main(int /*argc*/, char** /*argv*/)
 {
@@ -159,6 +177,7 @@ int main(int /*argc*/, char** /*argv*/)
 	bool showLevels = false;
 	bool showSample = false;
 	bool showTestCases = false;
+	bool showServerList = false;
 
 	// Window scroll positions.
 	int propScroll = 0;
@@ -166,6 +185,7 @@ int main(int /*argc*/, char** /*argv*/)
 	int toolsScroll = 0;
 	
 	string sampleName = "Choose Sample...";
+	string gameServerIp = "127.0.0.1";
 	
 	vector<string> files;
 	const string meshesFolder = "Meshes";
@@ -192,10 +212,18 @@ int main(int /*argc*/, char** /*argv*/)
 	
 	glEnable(GL_CULL_FACE);
 	glDepthFunc(GL_LEQUAL);
+
+	LyoungFakeServer* server = new LyoungFakeServer();
+	server->Start();
+	//std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
+	//std::chrono::system_clock::time_point prevTime = currentTime;
 	
 	bool done = false;
 	while(!done)
 	{
+		//currentTime = std::chrono::system_clock::now();
+		//auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - prevTime);				
+
 		// Handle input events.
 		int mouseScroll = 0;
 		bool processHitTest = false;
@@ -353,6 +381,9 @@ int main(int /*argc*/, char** /*argv*/)
 		float dt = (time - prevFrameTime) / 1000.0f;
 		prevFrameTime = time;
 		
+		if(server)
+			server->Tick(dt);
+
 		t += dt;
 
 		// Hit test mesh.
@@ -488,7 +519,9 @@ int main(int /*argc*/, char** /*argv*/)
 		if (sample)
 			sample->handleRender();
 		if (test)
-			test->handleRender();
+			test->handleRender();		
+		if(server)
+			server->handleRender();
 		
 		glDisable(GL_FOG);
 		
@@ -513,12 +546,20 @@ int main(int /*argc*/, char** /*argv*/)
 			if (test->handleRenderOverlay((double*)projectionMatrix, (double*)modelviewMatrix, (int*)viewport))
 				mouseOverMenu = true;
 		}
+		if (server)
+		{
+			server->handleRenderOverlay((double*)projectionMatrix, (double*)modelviewMatrix, (int*)viewport);
+		}
 
 		// Help text.
 		if (showMenu)
 		{
 			const char msg[] = "W/S/A/D: Move  RMB: Rotate";
 			imguiDrawText(280, height-20, IMGUI_ALIGN_LEFT, msg, imguiRGBA(255,255,255,128));
+			
+			char buff[32];
+			sprintf_s(buff, "FPS : %4.4f", dt);
+			imguiDrawText(280, height - 100, IMGUI_ALIGN_LEFT, buff, imguiRGBA(255, 255, 255, 128));
 		}
 		
 		if (showMenu)
@@ -532,9 +573,26 @@ int main(int /*argc*/, char** /*argv*/)
 				showTools = !showTools;
 
 			imguiSeparator();
+			
+			imguiLabel("GameServer IP");
+			if (imguiButton(gameServerIp.c_str()))
+			{
+				showSample = false;
+				if (showServerList)
+				{
+					showServerList = false;					
+				}
+				else
+				{
+					showServerList = true;					
+				}
+			}
+
+
 			imguiLabel("Sample");
 			if (imguiButton(sampleName.c_str()))
 			{
+				showServerList = false;
 				if (showSample)
 				{
 					showSample = false;
@@ -551,6 +609,7 @@ int main(int /*argc*/, char** /*argv*/)
 			imguiLabel("Input Mesh");
 			if (imguiButton(meshName.c_str()))
 			{
+				showServerList = false;
 				if (showLevels)
 				{
 					showLevels = false;
@@ -621,8 +680,14 @@ int main(int /*argc*/, char** /*argv*/)
 				{
 					newSample = g_samples[i].create();
 					if (newSample)
+					{
 						sampleName = g_samples[i].name;
-				}
+						if (server) 
+						{
+							server->SetNavigationSample(newSample);
+						}
+					}
+				}				
 			}
 			if (newSample)
 			{
@@ -662,6 +727,23 @@ int main(int /*argc*/, char** /*argv*/)
 				glFogf(GL_FOG_END, camr*1.25f);
 			}
 			
+			imguiEndScrollArea();
+		}
+
+		if (showServerList)
+		{
+			static int levelScroll = 0;
+			if (imguiBeginScrollArea("Choose Sample", width - 10 - 250 - 10 - 200, height - 10 - 250, 200, 250, &levelScroll))
+				mouseOverMenu = true;
+
+			Sample* newSample = nullptr;
+			for (int i = 0; i < g_nserverSamples; ++i)
+			{
+				if (imguiItem(g_serverlist[i].name.c_str()))
+				{
+					newSample = g_serverlist[i].create();					
+				}
+			}
 			imguiEndScrollArea();
 		}
 		
@@ -914,6 +996,8 @@ int main(int /*argc*/, char** /*argv*/)
 		
 		glEnable(GL_DEPTH_TEST);
 		SDL_GL_SwapWindow(window);
+
+		//prevTime = std::chrono::system_clock::now();
 	}
 	
 	imguiRenderGLDestroy();
@@ -922,6 +1006,7 @@ int main(int /*argc*/, char** /*argv*/)
 	
 	delete sample;
 	delete geom;
+	delete server;
 	
 	return 0;
 }
