@@ -1,5 +1,10 @@
+//
+// Copyright (c) 2016-2026 nicecapj@gmail.com
+//
+// https://github.com/nicecapj/recastnavigation/blob/withGameserver/RecastDemo/Include/LyoungVector.h
+//
 #pragma once
-#include <String>
+#include <string>
 
 template<typename T>
 struct LyoungVector2
